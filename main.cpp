@@ -1,6 +1,17 @@
 #include <iostream>
 
+#include <cstdlib>
+
+#include "Controller.h"
+
+
+using namespace std;
+
 int main() {
-    std::cout << "Hello, World!" << std::endl;
+
+    Controller controller;
+
+    controller.start();
+
     return 0;
 }
