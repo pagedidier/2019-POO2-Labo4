@@ -96,6 +96,14 @@ public:
 
         boat.remove(p);
         b->addPerson(p);
+        try{
+            check(boat);
+            check(*b);
+        }catch(std::runtime_error& e){
+            std::cout << e.what()<< std::endl;
+            boat.addPerson(p);
+            b->remove(p);
+        }
     }
 
     //hack c'est oas bo
