@@ -7,6 +7,7 @@
 
 #include <string>
 #include <list>
+#include <algorithm>
 
 #include "../person/Person.h"
 #include <iostream>
@@ -51,7 +52,7 @@ public:
     bool isEmpty() {
         return size() == 0;
     }
-    std::list<Person*> getPersons() const{
+    const std::list<Person*>& getPersons() const{
         return persons;
     }
     bool empty(){
@@ -65,7 +66,17 @@ public:
         }
         return nullptr;
     }
-
+    bool hasMember(const Person *p) const{
+        return find(persons.begin(),persons.end(),p) != persons.end();
+    }
+    bool hasMemberOf(const Container* container) const{
+        for(const Person* p : container->getPersons()) {
+            if (hasMember(p)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 };
 

@@ -23,7 +23,6 @@ public:
         return name;
     }
 
-
 public:
 
 private:

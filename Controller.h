@@ -7,9 +7,11 @@
 
 
 #include <list>
+#include <exception>
 #include <iostream>
 #include "container/Bank.h"
 #include "container/Boat.h"
+#include "container/Group.h"
 #include "person/Father.h"
 #include "person/Mother.h"
 #include "person/Son.h"
@@ -18,7 +20,7 @@
 #include "person/Robber.h"
 #include <cstdlib>
 #include <string>
-
+#include <algorithm>
 
 class Controller {
 
@@ -28,6 +30,14 @@ class Controller {
     Bank rightBank;
     Bank leftBank;
     Boat boat;
+
+    Group* family;
+    Group* robber;
+    Group* police;
+    Group* sons;
+    Group* daughter;
+    Group* mother;
+    Group* father;
 
     static const char CMD_SHOW = 'p';
     static const char CMD_EMBARK = 'e';
@@ -57,15 +67,22 @@ public:
     void embark(std::string personName) {
         Bank* b = boat.getBank();
         Person* p = b->getPersonyName(personName);
-        if(p == nullptr){
-            std::cout << "Personne "<< personName << " n'est pas sur cette rive !" <<std::endl<<std::endl;
-            return;
-        }
-        if(boat.size()<boat.getMaxPassenger()){
-            boat.addPerson(p);
-            b->remove(p);
-        }else{
-            std::cout << "Plus de place dans le bateau"<<std::endl;
+        if(p == nullptr)
+            throw std::runtime_error("Personne " + personName + " n'est pas sur cette rive !" );
+
+        if(boat.size()>boat.getMaxPassenger())
+            throw std::runtime_error("Plus de place dans le bateau" );
+
+
+        boat.addPerson(p);
+        b->remove(p);
+        try{
+            check(boat);
+            check(*b);
+        }catch(std::runtime_error& e){
+            std::cout << e.what()<< std::endl;
+            boat.remove(p);
+            b->addPerson(p);
         }
 
     }
@@ -74,15 +91,14 @@ public:
 
         Bank* b = boat.getBank();
         Person* p = boat.getPersonyName(personName);
-        if(p == nullptr){
-            std::cout << "Personne "<< personName << " n'est pas dans le bateau !" <<std::endl<<std::endl;
-            return;
-        }
+        if(p == nullptr)
+            throw std::runtime_error("Personne "+ personName + " n'est pas dans le bateau !" );
+
         boat.remove(p);
         b->addPerson(p);
-
     }
 
+    //hack c'est oas bo
     bool handleInput(std::string command) {
         char input = command[0];
         std::string param;
@@ -119,20 +135,26 @@ public:
 
     void start(){
         while(!gameEnded()){
-            std::string input;
-            if(!handleInput(getInput())){
-                std::cout << "Error"<<std::endl;
-            };
-            nextTurn();
+            try{
+                std::cout << turn <<  "> ";
+                handleInput(getInput());
+                nextTurn();
+            }catch (std::exception& e){
+                std::cout << e.what()<<std::endl;
+                display();
+            }
         }
+
         std::cout << "Game finished !"<<std::endl;
     }
     bool moveBoat(){
-        if(this->boat.hasDriver()){
-            boat.setBank((boat.getBank() == &rightBank) ? &leftBank : &rightBank);
-        }else{
-            std::cout << "Personne ne peut conduire le bateau"<< std::endl;
-        }
+        if(!this->boat.hasDriver())
+            throw std::runtime_error("Personne ne peut conduire le bateau");
+        boat.setBank((boat.getBank() == &rightBank) ? &leftBank : &rightBank);
+
+    }
+
+    virtual ~Controller() {
     }
 
 public:
@@ -143,18 +165,32 @@ public:
         boat.setBank(&leftBank);
         this->wantToContinue = true;
 
-        leftBank.addPersons({
-                                    new Father("pere"),
-                                    new Mother("mere"),
-                                    new Son("paul"),
-                                    new Son("pierre"),
-                                    new Daughter("julie"),
-                                    new Daughter("jeanne"),
-                                    new PoliceMan("policier"),
-                                    new Robber("voleur")
-                            });
+        Person* policeMan =new  PoliceMan("policier");
+        Person* robberMan =new  Robber("voleur");
+
+        std::list<Person*> familyList;
+        police = new Group("Policier",{policeMan});
+        robber = new Group("Voleur",{robberMan});
+        sons = new Group("sons",{new Son("paul"),new Son("pierre")});
+        daughter = new Group("daughter",{new Daughter("julie"),new Daughter("jeanne")});
+        father = new Group("father",{ new Father("pere")});
+        mother = new Group("mother",{ new Mother("mere")});
+
+
+
+        familyList.insert(familyList.begin(),daughter->getPersons().begin(),daughter->getPersons().end());
+        familyList.insert(familyList.end(),sons->getPersons().begin(),sons->getPersons().end());
+        familyList.insert(familyList.end(),father->getPersons().begin(),father->getPersons().end());
+        familyList.insert(familyList.end(),mother->getPersons().begin(),mother->getPersons().end());
+
+        family = new Group("Famille",familyList);
+
+        leftBank.addPersons(familyList);
+        leftBank.addPerson(robberMan);
+        leftBank.addPerson(policeMan);
 
         nbPersons = leftBank.size();
+
     }
     void showMenu(){
         std::cout << "p      : afficher"<< std::endl;
@@ -180,6 +216,19 @@ public:
         display();
         turn++;
     }
+
+
+    void check(const Container& container){
+
+        if(container.hasMemberOf(robber) && container.hasMemberOf(family) && !container.hasMemberOf(police))
+            throw std::runtime_error("Le voleur ne peut pas rester en contact avec un membre de la famille si le policier n'est pas présent");
+        if(container.hasMemberOf(sons) && container.hasMemberOf(mother) && !container.hasMemberOf(father))
+            throw std::runtime_error("Les fils ne peuvent rester seuls avec leur mère si le père n’est pas présent");
+
+        if(container.hasMemberOf(daughter) && container.hasMemberOf(father) && !container.hasMemberOf(mother))
+            throw std::runtime_error("Les filles ne peuvent rester seules avec leur père si la mère n’est pas présente");
+    }
+
 };
 
 

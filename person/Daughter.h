@@ -7,6 +7,7 @@
 
 
 #include "Person.h"
+#include "../container/Group.h"
 
 class Daughter : public Person {
 
