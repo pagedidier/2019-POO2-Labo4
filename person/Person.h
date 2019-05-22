@@ -1,7 +1,13 @@
-//
-// Created by dpage on 09.05.19.
-//
+/*
+ -----------------------------------------------------------------------------------
+ Laboratoire : 4
+ Fichier     : Person.h
+ Auteur(s)   : Page Didier
+ Date        : 22.05.2019
 
+ But         : Fichier de déclaration et implémentation de la class Person
+ -----------------------------------------------------------------------------------
+*/
 #ifndef INC_2019_POO2_LABO4_PERSON_H
 #define INC_2019_POO2_LABO4_PERSON_H
 
@@ -16,16 +22,28 @@ class Person{
     }
 
 public:
-    Person(const std::string &name) : name(name) {}
-    virtual bool canDrive() =0;
+    /**
+     * Constructeur
+     * @param name nom de la personne
+     */
+    Person(const std::string &name) : name(name) {
 
+    }
+    /**
+     * Personne qui doit être surchargé dans les enfant
+     * @return
+     */
+    virtual bool canDrive() const =0;
+
+    /**
+     * @return retoune le nom de la personne
+     */
     const std::string& getName() const {
         return name;
     }
 
-public:
-
 private:
+
     std::string name;
 
 };

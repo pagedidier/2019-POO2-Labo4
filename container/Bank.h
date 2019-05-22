@@ -1,6 +1,14 @@
-//
-// Created by dpage on 09.05.19.
-//
+/*
+ -----------------------------------------------------------------------------------
+ Laboratoire : 4
+ Fichier     : Bank.h
+ Auteur(s)   : Page Didier
+ Date        : 22.05.2019
+
+ But         : Fichier de déclaration de la class Bank
+ -----------------------------------------------------------------------------------
+*/
+
 
 #ifndef INC_2019_POO2_LABO4_BANK_H
 #define INC_2019_POO2_LABO4_BANK_H
@@ -8,6 +16,9 @@
 
 #include "Container.h"
 
+/**
+ * Classe modélisant une barge
+ */
 class Bank : public Container {
 
     friend std::ostream&operator<<(std::ostream& os,const Bank& bank){
@@ -19,13 +30,7 @@ class Bank : public Container {
     }
 
 public:
-    Bank(const std::string &name, const std::list<Person*> &persons): Container(name,persons){
-
-    }
     Bank(const std::string &name) : Container(name) {
-
-    }
-    virtual ~Bank(){
 
     }
 };
